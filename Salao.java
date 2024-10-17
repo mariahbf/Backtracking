@@ -4,8 +4,8 @@ public class Salao {
         String[][] matriz = new String[n][n];
         
         for(int l = 0; l < n; l++){
-            for(int c = 0; c < n; c++){
-                matriz[l][c] = "b";
+            for(int col = 0; col < n; col++){
+                matriz[l][col] = "b";
             }
         }
 
@@ -17,12 +17,10 @@ public class Salao {
            if (matriz[l-1][c] == "b" ||matriz[l-1][c-1]=="b" || matriz[l+1][c] == "b" || matriz[l][c-1] == "b" || matriz[l][c+1] == "b"){
                return false;
            }
+       }
 
         return false;
     }
-
-
-
 
     public static void main(Integer[] args) {
         
@@ -31,7 +29,6 @@ public class Salao {
         int c = args[2];
 
     }
-
 
 }
 
