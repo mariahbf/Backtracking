@@ -1,29 +1,36 @@
+
 import java.util.HashSet;
 import java.util.Set;
+import java.io.*;
 
-public class salao2 {
+public class SalaoFuncionando {
+
+    // Directions for adjacent and sight checks
+    private static final int[][] DIRECTIONS = { 
+        {-1, 0}, {1, 0}, {0, -1}, {0, 1}, 
+        {-1, -1}, {-1, 1}, {1, -1}, {1, 1} 
+    };
 
     // Check if placing a gunman of the given gang (B or C) at (row, col) is valid
-    public static boolean isValidPosition(char[][] board, int row, int col, char gang){
-        // 1. Ensure no same gang member is adjacent (including diagonals)
-        int[][] directions = { {-1, 0}, {1, 0}, {0, -1}, {0, 1}, {-1, -1}, {-1, 1}, {1, -1}, {1, 1} };
-        for (int[] dir : directions) {
+    public static boolean isValidPosition(char[][] board, int row, int col, char gang) {
+        // Check adjacent positions for the same gang member
+        for (int[] dir : DIRECTIONS) {
             int r = row + dir[0], c = col + dir[1];
             if (r >= 0 && r < board.length && c >= 0 && c < board[0].length && board[r][c] == gang) {
                 return false;
             }
         }
 
-        // 2. Ensure no gunman of the same gang is in line of sight (rows, columns, diagonals)
+        // Check lines of sight for the same gang member
         char rival = (gang == 'B') ? 'C' : 'B';
 
-        for (int[] dir : directions) {
+        for (int[] dir : DIRECTIONS) {
             int r = row + dir[0], c = col + dir[1];
             while (r >= 0 && r < board.length && c >= 0 && c < board[0].length) {
                 if (board[r][c] == gang) {
-                    return false; // Same gang member in line of sight without a rival
+                    return false; // Same gang member in line of sight
                 } else if (board[r][c] == rival) {
-                    break; // Rival blocks the sight, valid
+                    break; // Rival blocks the sight
                 }
                 r += dir[0];
                 c += dir[1];
@@ -38,8 +45,7 @@ public class salao2 {
         char rival = (gang == 'B') ? 'C' : 'B';
         int aimingCount = 0;
 
-        int[][] directions = { {-1, 0}, {1, 0}, {0, -1}, {0, 1}, {-1, -1}, {-1, 1}, {1, -1}, {1, 1} };
-        for (int[] dir : directions) {
+        for (int[] dir : DIRECTIONS) {
             int r = row + dir[0], c = col + dir[1];
             while (r >= 0 && r < board.length && c >= 0 && c < board[0].length) {
                 if (board[r][c] == rival) {
@@ -80,19 +86,16 @@ public class salao2 {
     }
 
     // The main backtracking function
-    public static void solve(char[][] board, int bCount, int cCount, int[] solutionCounter, Set<String> uniqueSolutions) {
+    public static void backtracking(char[][] board, int bCount, int cCount, Set<String> uniqueSolutions) {
         // If no more members to place, we check if the full configuration is valid
         if (bCount == 0 && cCount == 0) {
             if (isValidStandoff(board)) {
                 // Convert the board to a string representation
                 String boardStr = boardToString(board);
-                // Only count the solution if it's unique (not already in the set)
-                if (!uniqueSolutions.contains(boardStr)) {
-                    uniqueSolutions.add(boardStr); // Add the unique solution to the set
-                    solutionCounter[0]++;  // Increment the solution counter
-
-                    // Print the valid and unique configuration
-                    //System.out.println(boardStr);
+                // Only count the solution if it's unique
+                if (uniqueSolutions.add(boardStr)) { // Adds and checks for uniqueness
+                    // Uncomment to print the valid and unique configuration
+                    // System.out.println(boardStr);
                 }
             }
             return;
@@ -106,7 +109,7 @@ public class salao2 {
                     if (bCount > 0) {
                         board[row][col] = 'B';
                         if (isValidPosition(board, row, col, 'B')) {
-                            solve(board, bCount - 1, cCount, solutionCounter, uniqueSolutions);
+                            backtracking(board, bCount - 1, cCount, uniqueSolutions);
                         }
                         board[row][col] = '.';  // Backtrack
                     }
@@ -115,7 +118,7 @@ public class salao2 {
                     if (cCount > 0) {
                         board[row][col] = 'C';
                         if (isValidPosition(board, row, col, 'C')) {
-                            solve(board, bCount, cCount - 1, solutionCounter, uniqueSolutions);
+                            backtracking(board, bCount, cCount - 1, uniqueSolutions);
                         }
                         board[row][col] = '.';  // Backtrack
                     }
@@ -125,7 +128,7 @@ public class salao2 {
     }
 
     public static void main(String[] args) {
-
+        long startTime = System.nanoTime();
         int n = Integer.parseInt(args[0]);
         int bCount = Integer.parseInt(args[1]);
         int cCount = Integer.parseInt(args[2]);
@@ -137,16 +140,16 @@ public class salao2 {
             }
         }
 
-        // Initialize the solution counter
-        int[] solutionCounter = {0};
-
         // Set to store unique solutions
         Set<String> uniqueSolutions = new HashSet<>();
 
         // Start the recursive solving process
-        solve(board, bCount, cCount, solutionCounter, uniqueSolutions);
+        backtracking(board, bCount, cCount, uniqueSolutions);
+        long endTime = System.nanoTime();
+        long executionTime = (endTime - startTime) / 1000000;
 
-        // Print the total number of unique solutions at the end
-        System.out.println("Total number of unique solutions: " + solutionCounter[0]);
+        // Print the total number of unique solutions and execution time at the end
+        System.out.println("Total number of unique solutions: " + uniqueSolutions.size());
+        System.out.println("Execution time: " + executionTime + "ms");
     }
 }
